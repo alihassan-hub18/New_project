@@ -1,0 +1,63 @@
+/* --- Import Modern Font --- */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+.stApp {
+    background: linear-gradient(135deg, #e0f7fa 0%, #b3e5fc 100%);
+    font-family: 'Roboto', sans-serif;
+    color: #01579b;
+}
+
+/* --- Download Card Styling --- */
+.download-card {
+    display: flex;
+    flex-direction: row;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 20px;
+    gap: 20px;
+    align-items: center;
+    margin-top: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 2px solid #81d4fa;
+}
+
+.square-thumbnail {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.video-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.video-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0277bd;
+    margin-bottom: 8px;
+}
+
+.video-channel {
+    font-size: 14px;
+    color: #546e7a;
+    margin-bottom: 12px;
+}
+
+.download-status {
+    font-size: 15px;
+    color: #00acc1;
+    font-weight: 800;
+}
+
+/* --- Mobile Responsive --- */
+@media screen and (max-width: 600px) {
+    .download-card {
+        flex-direction: column;
+        text-align: center;
+    }
+}
