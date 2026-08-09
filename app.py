@@ -1,58 +1,32 @@
+import os
 import time
 import streamlit as st
 from youtube import download_progress, start_background_download
 
+st.set_page_config(page_title="SkyDownloader", page_icon="☁️", layout="centered")
 
-st.set_page_config(page_title="YouTube Downloader", page_icon="📥", layout="centered")
-# 2. Function to load external CSS safely
+
 def local_css(file_name):
   try:
     with open(file_name) as f:
       st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-  except FileNotFoundError:
+  except:
     pass
 
 
-# Load the external CSS file
 local_css("style.css")
 
 st.markdown(
-    """
-    <style>
-        .download-card {
-            display: flex;
-            background-color: #1e1e1e;
-            padding: 15px;
-            border-radius: 12px;
-            gap: 20px;
-            align-items: center;
-            margin-top: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-        .square-thumbnail {
-            width: 160px;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-        .video-info { color: #ffffff; font-family: sans-serif; }
-        .video-title { font-size: 16px; font-weight: 600; margin-bottom: 5px; }
-        .video-channel { font-size: 14px; color: #aaa; margin-bottom: 8px; }
-        .download-status { font-size: 14px; color: #3b82f6; font-weight: 600; }
-    </style>
-""",
+    "<h1 style='text-align: center; color: #01579b;'>☁️ SkyTube Downloader</h1>",
     unsafe_allow_html=True,
 )
+st.write("---")
 
-st.title("📥 YouTube Video Downloader")
-st.write(
-    "Paste your YouTube link below. The download runs in the background with"
-    " live percentage tracking!"
+url = st.text_input(
+    "Paste your YouTube link here:", placeholder="https://youtube.com/..."
 )
 
-url = st.text_input("Video or Short URL", placeholder="Paste YouTube link here...")
-
-if st.button("Start Download", type="primary"):
+if st.button("Start Download 🚀", type="primary"):
   if url.strip():
     with st.spinner("Fetching video info..."):
       success, title, uploader, thumbnail_url, download_id = (
@@ -61,50 +35,71 @@ if st.button("Start Download", type="primary"):
 
     if success:
       card_placeholder = st.empty()
-
-      # Live loop to poll background progress and update UI
       while True:
         prog_data = download_progress.get(
-            download_id, {'percent': 0.0, 'status': 'starting'}
+            download_id, {"percent": 0.0, "status": "starting"}
         )
-        current_percent = prog_data['percent']
-        status = prog_data['status']
+        current_percent = prog_data["percent"]
+        status = prog_data["status"]
 
-        if 'error' in status:
-          card_placeholder.error(f'❌ {status}')
+        if "error" in status:
+          card_placeholder.error(f"❌ {status}")
           break
-        elif status == 'completed' or current_percent >= 100.0:
+        elif status == "completed" or current_percent >= 100.0:
+          # Find the downloaded file in downloads folder
+          download_dir = "./downloads"
+          downloaded_file_path = None
+          if os.path.exists(download_dir):
+            for file in os.listdir(download_dir):
+              if file.lower().endswith((".mp4", ".mkv", ".webm", ".mp3")):
+                downloaded_file_path = os.path.join(download_dir, file)
+                break
+
           card_placeholder.markdown(
               f"""
-                    <div class="download-card">
-                        <img src="{thumbnail_url}" class="square-thumbnail"/>
-                        <div class="video-info">
-                            <div class="video-title">{title}</div>
-                            <div class="video-channel">{uploader}</div>
-                            <div class="download-status" style="color: #22c55e;">🎉 Download Completed! (100%)</div>
-                        </div>
-                    </div>
-                    """,
+            <div class="download-card">
+                <img src="{thumbnail_url}" class="square-thumbnail"/>
+                <div class="video-info">
+                    <div class="video-title">{title}</div>
+                    <div class="video-channel">{uploader}</div>
+                    <div class="download-status" style="color: #00c853;">✅ Download Completed!</div>
+                </div>
+            </div>
+          """,
               unsafe_allow_html=True,
           )
+
+          # Show native Streamlit download button for mobile/PC
+          if downloaded_file_path and os.path.exists(downloaded_file_path):
+            with open(downloaded_file_path, "rb") as f:
+              st.download_button(
+                  label="📥 Save File to Device / Gallery",
+                  data=f,
+                  file_name=os.path.basename(downloaded_file_path),
+                  mime="video/mp4",
+                  type="primary",
+              )
+
           st.balloons()
           break
         else:
           card_placeholder.markdown(
               f"""
-                    <div class="download-card">
-                        <img src="{thumbnail_url}" class="square-thumbnail"/>
-                        <div class="video-info">
-                            <div class="video-title">{title}</div>
-                            <div class="video-channel">{uploader}</div>
-                            <div class="download-status">Downloading... {current_percent:.1f}%</div>
-                        </div>
-                    </div>
-                    """,
+            <div class="download-card">
+                <img src="{thumbnail_url}" class="square-thumbnail"/>
+                <div class="video-info">
+                    <div class="video-title">{title}</div>
+                    <div class="video-channel">{uploader}</div>
+                    <div class="download-status">Downloading... {current_percent:.1f}%</div>
+                </div>
+            </div>
+          """,
               unsafe_allow_html=True,
           )
-        time.sleep(1)  # Refresh every 1 second
+        time.sleep(1)
     else:
-      st.error(f'❌ Error: {download_id}')
+      st.error(
+          "❌ Error fetching video. Make sure the link is public and valid."
+      )
   else:
-    st.error('Please enter a valid URL.')
+    st.error("Please enter a valid URL.")
