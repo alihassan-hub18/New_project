@@ -39,9 +39,9 @@ def run_background_download(url, download_id):
         "format": "best",
         "outtmpl": os.path.join(download_dir, "%(title)s.%(ext)s"),
         "progress_hooks": [progress_hook],
+        "extractor_args": {"youtube": {"player_client": ["android", "web"]}},
     }
 
-    # Add cookies if cookies.txt is uploaded in root directory
     if os.path.exists("cookies.txt"):
       ydl_opts["cookiefile"] = "cookies.txt"
 
@@ -51,22 +51,25 @@ def run_background_download(url, download_id):
   except Exception as e:
     download_progress[download_id] = {"percent": 0.0, "status": f"error: {e}"}
 
+
 def start_background_download(url):
   try:
-    ydl_opts = {'noplaylist': True}
-    
-    # Cookies file check karein aur options mein add karein
-    if os.path.exists('cookies.txt'):
-      ydl_opts['cookiefile'] = 'cookies.txt'
+    ydl_opts = {
+        "noplaylist": True,
+        "extractor_args": {"youtube": {"player_client": ["android", "web"]}},
+    }
+
+    if os.path.exists("cookies.txt"):
+      ydl_opts["cookiefile"] = "cookies.txt"
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
       info = ydl.extract_info(url, download=False)
-      title = info.get('title', 'Video')
-      uploader = info.get('uploader', 'Channel')
-      thumbnail_url = info.get('thumbnail', '')
+      title = info.get("title", "Video")
+      uploader = info.get("uploader", "Channel")
+      thumbnail_url = info.get("thumbnail", "")
 
     download_id = url
-    download_progress[download_id] = {'percent': 0.0, 'status': 'starting'}
+    download_progress[download_id] = {"percent": 0.0, "status": "starting"}
 
     thread = threading.Thread(
         target=run_background_download, args=(url, download_id)
@@ -76,4 +79,4 @@ def start_background_download(url):
 
     return True, title, uploader, thumbnail_url, download_id
   except Exception as e:
-    return False, '', '', '', str(e)
+    return False, "", "", "", str(e)
